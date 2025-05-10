@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple File Upload</title>
+</head>
+<body>
+    <h1>Upload Multiple Files</h1>
+    
+    <form id="multiUploadForm">
+        <input type="file" id="fileInput" name="files" multiple>
+        <button type="submit">Upload Files</button>
+    </form>
+    
+    <div id="progressContainer" style="display: none;">
+        <progress id="uploadProgress" value="0" max="100"></progress>
+        <span id="progressText">0%</span>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('multiUploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('uploadProgress');
+            const progressText = document.getElementById('progressText');
+            const resultsDiv = document.getElementById('results');
+            
+            if (fileInput.files.length === 0) {
+                alert('Please select at least one file');
+                return;
+            }
+            
+            const formData = new FormData();
+            
+            // Append all selected files
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('files', fileInput.files[i]);
+            }
+            
+            try {
+                // Show progress bar
+                progressContainer.style.display = 'block';
+                progressBar.value = 0;
+                progressText.textContent = '0%';
+                
+                const xhr = new XMLHttpRequest();
+                
+                // Set up progress tracking
+                xhr.upload.addEventListener('progress', (event) => {
+                    if (event.lengthComputable) {
+                        const percentComplete = (event.loaded / event.total) * 100;
+                        progressBar.value = percentComplete;
+                        progressText.textContent = `${Math.round(percentComplete)}%`;
+                    }
+                });
+                
+                // Handle completion
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const result = JSON.parse(xhr.responseText);
+                            displayResults(result);
+                        } catch (e) {
+                            console.error("Parsing error:", e, xhr.responseText);
+                            resultsDiv.innerHTML = `
+                                <p style="color: red;">Error parsing response</p>
+                                <pre>Status: ${xhr.status}</pre>
+                                <pre>Response: ${xhr.responseText}</pre>
+                            `;
+                        }
+                    } else {
+                        console.error("Server error:", xhr.status, xhr.responseText);
+                        resultsDiv.innerHTML = `
+                            <p style="color: red;">Server error (${xhr.status})</p>
+                            <pre>${xhr.responseText}</pre>
+                        `;
+                    }
+                });
+                
+                // Handle errors
+                xhr.addEventListener('error', () => {
+                    console.error("Network error");
+                    resultsDiv.innerHTML = `
+                        <p style="color: red;">Network error occurred</p>
+                        <p>Check console for details</p>
+                    `;
+                });
+                
+                xhr.open('POST', 'http://localhost:8000/api/files/upload');
+                xhr.send(formData);
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">Upload failed: ${error.message}</p>`;
+            }
+        });
+        
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!result.results) {
+                resultsDiv.innerHTML = `
+                    <p style="color: red;">Invalid response format</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                return;
+            }
+            
+            resultsDiv.innerHTML = `
+                <h3>Upload Results</h3>
+                <p>Total files: ${result.results.length}</p>
+                <p>Success: ${result.success_count || 0}</p>
+                <p>Failed: ${result.failed_count || 0}</p>
+                <ul>
+                    ${result.results.map(file => `
+                        <li>
+                            ${file.filename} - ${file.status || 'unknown'}
+                            ${file.error ? `<br><small>Error: ${file.error}</small>` : ''}
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+        </script>
+</body>
+</html>
