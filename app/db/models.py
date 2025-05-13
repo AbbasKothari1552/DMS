@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Text
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 import uuid
@@ -26,6 +26,8 @@ class FileMetadata(Base):
 
     # one-to-one relation wit `text_metadata`
     text_metadata = relationship("TextMetaData", back_populates="file", uselist=False)
+    # # connection with chunk_metadata` table
+    # chunks = relationship("ChunkMetadata", secondary="text_metadata", viewonly=True)
 
 
     @property
@@ -56,6 +58,27 @@ class TextMetaData(Base):
     error_message = Column(String, nullable=True)
 
     file = relationship("FileMetadata", back_populates="text_metadata")
+    # one-to-one relation wit `text_metadata`
+    chunk_metadata = relationship("ChunkMetadata", back_populates="text", uselist=False)
+
+
+class ChunkMetadata(Base):
+    __tablename__ = "chunk_metadata"
+
+    id = Column(Integer, primary_key=True, index=True)
+    text_metadata_id = Column(Integer, ForeignKey("text_metadata.id"))
+    chunk_index = Column(Integer)
+    chunk_text = Column(Text)
+
+    # Vectore id
+    vector_id = Column(Integer, nullable=True)
+
+    created_date = Column(DateTime, default=datetime.now())
+    modified_date = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
+
+    # relation with `text_metadata` table
+    text = relationship("TextMetaData", back_populates="chunk_metadata")
+
 
 
 

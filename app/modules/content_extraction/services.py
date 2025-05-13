@@ -81,7 +81,7 @@ class ContentExtractor:
                 self.db.add(text_meta)
             else:
                 text_meta = existing_text_meta
-                text_meta.extracted_text_path = content_filename
+                text_meta.upload_path = content_filename
                 text_meta.extraction_status = "completed"
                 
             self.db.commit()

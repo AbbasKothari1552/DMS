@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.db.models import FileMetadata
 from app.modules.content_extraction.services import ContentExtractor
+from app.modules.chunking.services import ChunkData
+from app.modules.embeddings.services import EmbedderService
 from app.core.config import UPLOAD_DIR
 
 # logging configs
@@ -78,6 +80,31 @@ class FileUploadService:
                 logger.error(f"Failed to extract content {file.filename}: {str(e)}", exc_info=True)
                 # Don't fail the upload if extraction fails
                 print(f"Content Extraction error: {e}")
+
+            
+            # chunk the extracted data
+            try:
+                chunker = ChunkData(db=self.db)
+                logger.info(f"Starting Text Chunking: {text_meta.text_filename}")
+
+                chunk_meta = chunker.chunk_and_store_text(text_meta.id)
+
+            except Exception as e:
+                logger.error(f"Failed to Chunk Text {text_meta.text_filename}: {str(e)}", exc_info=True)
+
+                print(f"Text Chunk error: {e}")
+
+            
+            # generate embedding of text chunks and store it in vector DB
+            try:
+                embedder = EmbedderService(self.db)
+                logger.info(f"Starting Text Chunks Embedding: {text_meta.text_filename}")
+
+                embed_meta = embedder.embed_and_store_chunks(text_meta.id)
+
+            except Exception as e:
+                 logger.error(f"Failed to Embed Chunk Text {text_meta.text_filename}: {str(e)}", exc_info=True)
+
             
             return db_file
             
