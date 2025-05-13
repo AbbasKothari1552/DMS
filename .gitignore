@@ -1,4 +1,6 @@
+**/__pycache__/**
 virt
 .env
 documents
-**/__pycache__/**
+extracted_content
+logs

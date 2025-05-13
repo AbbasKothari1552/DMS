@@ -9,6 +9,8 @@ class FileMetadataBase(BaseModel):
     file_size: Optional[int]
     content_type: Optional[str]
     upload_path: str
+    extracted_text_path: str
+    extraction_status: str
     created_date: datetime
     modified_date: datetime
     upload_status: Optional[str]

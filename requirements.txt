@@ -3,3 +3,11 @@ uvicorn
 fastapi[standard]
 SQLAlchemy
 aiosqlite
+pdf2image 
+pytesseract 
+pillow 
+python-docx 
+PyPDF2
+pdfminer.six 
+openpyxl
+alembic

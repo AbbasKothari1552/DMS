@@ -3,16 +3,26 @@ import uuid
 from pathlib import Path
 from typing import List, Union
 from fastapi import UploadFile, HTTPException, status
-from db.session import SessionLocal
-from db.models.file_metadata import FileMetadata
-from core.config import UPLOAD_DIR
+from sqlalchemy.orm import Session
+
+
+from app.db.models import FileMetadata
+from app.modules.content_extraction.services import ContentExtractor
+from app.core.config import UPLOAD_DIR
+
+# logging configs
+from app.core.logging_config import get_logger
+logger = get_logger(__name__)
+
 
 class FileUploadService:
-    def __init__(self, db: SessionLocal):
+    def __init__(self, db: Session):
         self.db = db
+        logger.debug("FileUploadService initialized")
 
     async def save_uploaded_file(self, file: UploadFile) -> FileMetadata:
         """Save a single uploaded file and return metadata"""
+        logger.info(f"Processing file: {file.filename}")
         if not self.db:
             raise HTTPException(
                 status_code=500,
@@ -22,7 +32,8 @@ class FileUploadService:
         try:
             # Generate unique filename
             file_ext = Path(file.filename).suffix.lower()
-            unique_name = f"{uuid.uuid4()}{file_ext}"
+            file_id = str(uuid.uuid4())
+            unique_name = f"{file_id}{file_ext}"
 
             # Create full path including UPLOAD_DIR
             file_path = Path(UPLOAD_DIR) / unique_name
@@ -41,22 +52,38 @@ class FileUploadService:
             
             # Create metadata record
             db_file = FileMetadata(
+                file_id=file_id,
                 filename=file.filename,
-                file_id=unique_name,
-                upload_path=str(file_path),
                 file_type=file_ext[1:] if file_ext else None,
                 file_size=file_size,
-                content_type=file.content_type
+                content_type=file.content_type,
+                upload_path=str(file_path),
             )
             
             self.db.add(db_file)
-            await self.db.commit()
-            await self.db.refresh(db_file)
+            self.db.commit()
+            self.db.refresh(db_file)
+
+            logger.debug(f"File {file.filename} saved successfully, size: {file_size} bytes")
+
+            # Now extract content with a fresh database session
+            try:
+                extractor = ContentExtractor(db=self.db)
+                logger.info(f"Starting content extraction: {file.filename}")
+                
+                # Use the committed file_id
+                text_meta = extractor.extract_and_store_content(db_file.id)  # Use the database ID
+                
+            except Exception as e:
+                logger.error(f"Failed to extract content {file.filename}: {str(e)}", exc_info=True)
+                # Don't fail the upload if extraction fails
+                print(f"Content Extraction error: {e}")
             
             return db_file
             
         except Exception as e:
-            await self.db.rollback()
+            self.db.rollback()
+            logger.error(f"Failed to save file {file.filename}: {str(e)}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to save file: {str(e)}"
