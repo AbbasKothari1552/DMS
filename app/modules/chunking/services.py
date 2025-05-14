@@ -19,7 +19,7 @@ class ChunkData:
         self.db = db
 
     
-    def save_chunk(self, text_file_id: int, chunk_index: int, chunk_text: str) -> ChunkMetadata:
+    def save_chunk(self, text_file_id: int, file_id: int, chunk_index: int, chunk_text: str) -> ChunkMetadata:
         """
         Saving each chunk with its text file id
         """
@@ -34,6 +34,7 @@ class ChunkData:
         try:
             db_chunk = ChunkMetadata(
                 text_metadata_id=text_file_id,
+                file_id=file_id,
                 chunk_index=chunk_index,
                 chunk_text=chunk_text
             )
@@ -62,6 +63,9 @@ class ChunkData:
         if not text_file_meta:
             raise HTTPException(status_code=404, detail="File not found")
         
+        # get original file file_id
+        file_id = text_file_meta.file_id
+        
         # Step 3: Extract all text from file
         content_file_path = text_file_meta.upload_path
         with open(content_file_path, encoding="utf-8") as f:
@@ -83,7 +87,7 @@ class ChunkData:
             # Step 5: Save each chunk into database
             chunk_db = []
             for index, chunk in enumerate(chunks):
-                chunk_db.append(self.save_chunk(text_file_id, index, chunk.page_content))
+                chunk_db.append(self.save_chunk(text_file_id, file_id, index, chunk.page_content))
 
             logger.debug(f"All Chunks saves successfully")
         

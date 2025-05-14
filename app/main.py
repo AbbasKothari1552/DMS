@@ -5,6 +5,9 @@ from app.db.session import SessionLocal, engine
 from app.db.base import Base
 from app.db.init_db import init_db
 from app.modules.file_upload.routes import router as upload_router
+from app.modules.search.routes import router as semantic_search_router
+
+
 from app.core.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -35,6 +38,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(upload_router, prefix="/api/files", tags=["files"])
+app.include_router(semantic_search_router, prefix="/api")
 
 @app.get("/")
 def read_root():

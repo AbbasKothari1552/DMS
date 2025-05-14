@@ -66,6 +66,7 @@ class ChunkMetadata(Base):
     __tablename__ = "chunk_metadata"
 
     id = Column(Integer, primary_key=True, index=True)
+    file_id = Column(Integer, ForeignKey("file_metadata.id"))
     text_metadata_id = Column(Integer, ForeignKey("text_metadata.id"))
     chunk_index = Column(Integer)
     chunk_text = Column(Text)
@@ -78,6 +79,8 @@ class ChunkMetadata(Base):
 
     # relation with `text_metadata` table
     text = relationship("TextMetaData", back_populates="chunk_metadata")
+    # relation with `file_metadata` table
+    file = relationship("FileMetadata")
 
 
 

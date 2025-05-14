@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Semantic Search</title>
+</head>
+<body>
+    <h1>Document Search</h1>
+    <form method="post" action="http://localhost:8000/api/search">
+        <input type="text" name="query" placeholder="Enter search query" value="{{ query | default('') }}">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if results %}
+        <h2>Results:</h2>
+        <ul>
+            {% for item in results %}
+                <li>
+                    <strong>{{ item.file_name }}</strong><br>
+                    {{ item.chunk_text }}...<br>
+                    <a href="{{ item.file_path }}" target="_blank">Open Document</a> (Score: {{ '%.2f' % item.score }})
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
