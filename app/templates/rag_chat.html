@@ -1,0 +1,38 @@
+<!-- app/templates/chat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Document Q&A</title>
+</head>
+<body>
+    <h1>Ask a Question</h1>
+    <form method="post" action="http://localhost:8000/api/chat">
+        <input type="text" name="query" placeholder="Enter your question here" style="width: 400px" required>
+        <button type="submit">Ask</button>
+    </form>
+
+    {% if query %}
+        <h2>Query:</h2>
+        <p>{{ query }}</p>
+    {% endif %}
+
+    {% if answer %}
+        <h2>Answer:</h2>
+        <p>{{ answer }}</p>
+    {% endif %}
+
+    {% if references %}
+        <h2>Document References:</h2>
+        <ul>
+            {% for ref in references %}
+                <li>
+                    <strong>{{ ref.file_name }}</strong><br>
+                    <em>Snippet:</em> {{ ref.snippet }}<br>
+                    <a href="{{ ref.file_path }}" target="_blank">Open Document</a> (Score: {{ '%.2f' % ref.score }})
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

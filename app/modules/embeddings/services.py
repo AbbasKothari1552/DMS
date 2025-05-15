@@ -37,7 +37,11 @@ class EmbedderService:
         try:
             # Step 3: Extract chunk text and metadata
             chunk_texts = [chunk.chunk_text for chunk in text_meta]
-            metadata = [{"chunk_id": chunk.id, "file_id": chunk.text_metadata_id} for chunk in text_meta]
+            metadata = [{
+                "chunk_id": chunk.id, 
+                "text_metadata_id": chunk.text_metadata_id,
+                "file_id": chunk.file_id
+                } for chunk in text_meta]
 
             # Step 4: Generate embeddings
             vectors = embedder.embed_texts(chunk_texts)
