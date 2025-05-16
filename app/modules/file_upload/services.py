@@ -37,12 +37,14 @@ class FileUploadService:
             file_id = str(uuid.uuid4())
             unique_name = f"{file_id}{file_ext}"
 
+            # upload path
+            upload_path = Path(UPLOAD_DIR) / unique_name
+
             # Create full path including UPLOAD_DIR
             file_path = Path(UPLOAD_DIR) / unique_name
             # file_path = Path(unique_name)  # Store in root of upload dir
             
             # Ensure upload directory exists
-            # full_path = Path(UPLOAD_DIR) / file_path
             file_path.parent.mkdir(parents=True, exist_ok=True)
             
             # Save file
@@ -59,7 +61,7 @@ class FileUploadService:
                 file_type=file_ext[1:] if file_ext else None,
                 file_size=file_size,
                 content_type=file.content_type,
-                upload_path=str(file_path),
+                upload_path=str(upload_path),
             )
             
             self.db.add(db_file)

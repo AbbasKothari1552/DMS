@@ -2,7 +2,7 @@ from pathlib import Path
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.config import CONTENT_EXTRACTION_DIR
+from app.core.config import BASE_PATH, CONTENT_EXTRACTION_DIR
 from app.db.models import TextMetaData, FileMetadata
 
 # Import extractors
@@ -60,13 +60,15 @@ class ContentExtractor:
             # Step 4: Define output path
             content_filename = f"{file_meta.file_id}.txt"
             content_path = self.content_dir / content_filename
+
+            input_path = BASE_PATH / Path(file_meta.upload_path)
             
             logger.info(f"Extracting content from: {file_meta.upload_path}")
             logger.info(f"Saving extracted content to: {content_path}")
             
             # Step 5: Perform extraction
             result = extractor(
-                input_path=file_meta.upload_path,
+                input_path=input_path,
                 output_path=str(content_path)
             )
             

@@ -10,6 +10,7 @@ python-docx
 PyPDF2
 pdfminer.six 
 openpyxl
+python-dotenv
 alembic
 langchain
 langchain_community
@@ -17,3 +18,7 @@ faiss-cpu
 sentence-transformers
 langchain_huggingface
 langchain-ollama
+fastapi-admin
+sqladmin
+# standard driver used by SQLAlchemy to connect with PostgreSQL.
+psycopg2-binary
