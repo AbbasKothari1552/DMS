@@ -14,6 +14,8 @@ class EmbedderService:
 
     def __init__(self, db: Session, dim: int = EMBEDDING_DIM):
         self.db = db
+        self.embedder = Embedder()
+        self.faiss_handler = FAISSHandler()
 
     def embed_and_store_chunks(self, text_file_id: int):
 
@@ -26,8 +28,8 @@ class EmbedderService:
         logger.info(f"Starting  embedding of chunked text for file_id: {text_file_id}")
 
         # step 1: create instance of vector db
-        embedder = Embedder()
-        faiss_handler = FAISSHandler()  # MiniLM model has 384 dim
+        # embedder = Embedder()
+        # faiss_handler = FAISSHandler()  # MiniLM model has 384 dim
 
         # Step 2: Get all chunks for given id
         text_meta = self.db.query(ChunkMetadata).filter(ChunkMetadata.text_metadata_id == text_file_id).all()
@@ -44,10 +46,10 @@ class EmbedderService:
                 } for chunk in text_meta]
 
             # Step 4: Generate embeddings
-            vectors = embedder.embed_texts(chunk_texts)
+            vectors = self.embedder.embed_texts(chunk_texts)
 
             # Step 5: Add to FAISS and get vector IDs
-            vector_ids = faiss_handler.add_embeddings(vectors, metadata)
+            vector_ids = self.faiss_handler.add_embeddings(vectors, metadata)
 
             # Step 6: Update DB with vector IDs
             for chunk, vector_id in zip(text_meta, vector_ids):

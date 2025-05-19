@@ -15,9 +15,9 @@ from app.core.config import UPLOAD_DIR
 from app.routes.file_upload_routes import router as upload_router
 from app.routes.semantic_search_routes import router as semantic_search_router
 from app.routes.chat_routes import router as chat_router
+from app.modules.embeddings.embedder import Embedder
 
 from app.core.logging_config import get_logger
-
 logger = get_logger(__name__)
 
 # Create tables
@@ -28,6 +28,9 @@ app = FastAPI()
 @app.on_event("startup")
 def on_startup():
     logger.info("Application starting up...")
+    # Warm up the embedding model
+    Embedder()  # This triggers the model load
+    logger.info("Embedding model warmed up and ready")
     # initialize database
     init_db()
 

@@ -70,78 +70,80 @@ class FileUploadService:
 
             logger.debug(f"File {file.filename} saved successfully, size: {file_size} bytes")
 
-            # Now extract content with a fresh database session
-            try:
-                extractor = ContentExtractor(db=self.db)
-                logger.info(f"Starting content extraction: {file.filename}")
-                
-                # Use the committed file_id
-                text_meta = extractor.extract_and_store_content(db_file.id)  # Use the database ID
-                
-            except Exception as e:
-                logger.error(f"Failed to extract content {file.filename}: {str(e)}", exc_info=True)
-                # Don't fail the upload if extraction fails
-                print(f"Content Extraction error: {e}")
-
-            
-            # chunk the extracted data
-            try:
-                chunker = ChunkData(db=self.db)
-                logger.info(f"Starting Text Chunking: {text_meta.text_filename}")
-
-                chunk_meta = chunker.chunk_and_store_text(text_meta.id)
-
-            except Exception as e:
-                logger.error(f"Failed to Chunk Text {text_meta.text_filename}: {str(e)}", exc_info=True)
-
-                print(f"Text Chunk error: {e}")
-
-            
-            # generate embedding of text chunks and store it in vector DB
-            try:
-                embedder = EmbedderService(self.db)
-                logger.info(f"Starting Text Chunks Embedding: {text_meta.text_filename}")
-
-                embed_meta = embedder.embed_and_store_chunks(text_meta.id)
-
-            except Exception as e:
-                 logger.error(f"Failed to Embed Chunk Text {text_meta.text_filename}: {str(e)}", exc_info=True)
-
-            
             return db_file
+
+            # # Now extract content with a fresh database session
+            # try:
+            #     extractor = ContentExtractor(db=self.db)
+            #     logger.info(f"Starting content extraction: {file.filename}")
+                
+            #     # Use the committed file_id
+            #     text_meta = extractor.extract_and_store_content(db_file.id)  # Use the database ID
+                
+            # except Exception as e:
+            #     logger.error(f"Failed to extract content {file.filename}: {str(e)}", exc_info=True)
+            #     # Don't fail the upload if extraction fails
+            #     print(f"Content Extraction error: {e}")
+
+            
+            # # chunk the extracted data
+            # try:
+            #     chunker = ChunkData(db=self.db)
+            #     logger.info(f"Starting Text Chunking: {text_meta.text_filename}")
+
+            #     chunk_meta = chunker.chunk_and_store_text(text_meta.id)
+
+            # except Exception as e:
+            #     logger.error(f"Failed to Chunk Text {text_meta.text_filename}: {str(e)}", exc_info=True)
+
+            #     print(f"Text Chunk error: {e}")
+
+            
+            # # generate embedding of text chunks and store it in vector DB
+            # try:
+            #     embedder = EmbedderService(self.db)
+            #     logger.info(f"Starting Text Chunks Embedding: {text_meta.text_filename}")
+
+            #     embed_meta = embedder.embed_and_store_chunks(text_meta.id)
+
+            # except Exception as e:
+            #      logger.error(f"Failed to Embed Chunk Text {text_meta.text_filename}: {str(e)}", exc_info=True)
+
+            
+            # return db_file
             
         except Exception as e:
-            self.db.rollback()
+            # self.db.rollback()
             logger.error(f"Failed to save file {file.filename}: {str(e)}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to save file: {str(e)}"
             )
-        finally:
-            await file.close()
+        # finally:
+        #     await file.close()
 
-    async def process_uploaded_items(
-        self, 
-        items: List[UploadFile]
-    ) -> List[Union[FileMetadata, dict]]:
-        """Process mixed list of files and folder paths"""
-        results = []
+    # async def process_uploaded_items(
+    #     self, 
+    #     items: List[UploadFile]
+    # ) -> List[Union[FileMetadata, dict]]:
+    #     """Process mixed list of files and folder paths"""
+    #     results = []
         
-        for item in items:
-            try:
-                file_meta = await self.save_uploaded_file(item)
-                results.append(file_meta)
-            except HTTPException as e:
-                results.append({
-                    "filename": item.filename,
-                    "error": e.detail,
-                    "status": "failed"
-                })
-            except Exception as e:
-                results.append({
-                    "path": str(item),
-                    "error": str(e),
-                    "status": "failed"
-                })
+    #     for item in items:
+    #         try:
+    #             file_meta = await self.save_uploaded_file(item)
+    #             results.append(file_meta)
+    #         except HTTPException as e:
+    #             results.append({
+    #                 "filename": item.filename,
+    #                 "error": e.detail,
+    #                 "status": "failed"
+    #             })
+    #         except Exception as e:
+    #             results.append({
+    #                 "path": str(item),
+    #                 "error": str(e),
+    #                 "status": "failed"
+    #             })
                 
-        return results
+    #     return results

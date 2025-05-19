@@ -10,7 +10,7 @@ if DATABASE_URL.startswith("sqlite"):
 
 engine = create_engine(
     DATABASE_URL, 
-    # not required using postgresql
+    # not required when we use postgresql
     # connect_args=connect_args
 )
 
