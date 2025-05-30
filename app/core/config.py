@@ -27,3 +27,8 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
 EMBEDDING_DIM = os.getenv("EMBEDDING_DIM")
 
 LLM_MODEL = os.getenv("LLM_MODEL")
+
+CATEGORY_LIST = [
+    "Legal", "Financial", "Technical", "Medical", "Educational", "Marketing",
+    "Invoice", "Results", "Books"
+]

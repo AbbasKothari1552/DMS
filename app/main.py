@@ -29,7 +29,7 @@ app = FastAPI()
 def on_startup():
     logger.info("Application starting up...")
     # Warm up the embedding model
-    Embedder()  # This triggers the model load
+    # Embedder()  # This triggers the model load
     logger.info("Embedding model warmed up and ready")
     # initialize database
     init_db()

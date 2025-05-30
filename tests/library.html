@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Management UI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            secondary: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+            }
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    .folder:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    .document-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .upload-area {
+      border: 2px dashed #cbd5e1;
+      transition: all 0.3s ease;
+    }
+    .upload-area:hover {
+      border-color: #0ea5e9;
+      background-color: #f0f9ff;
+    }
+    .upload-area.drag-over {
+      border-color: #0ea5e9;
+      background-color: #e0f2fe;
+    }
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+    .folder-item {
+      transition: all 0.2s ease;
+    }
+    .folder-item:hover {
+      background-color: #f8fafc;
+    }
+    .folder-item.active {
+      background-color: #e0f2fe;
+    }
+    .folder-icon {
+      transition: transform 0.2s ease;
+    }
+    .folder-item.active .folder-icon {
+      transform: rotate(90deg);
+    }
+    .nested-folder {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .nested-folder.open {
+      max-height: 1000px;
+    }
+    .breadcrumb-item:not(:last-child)::after {
+      content: '/';
+      margin: 0 8px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-primary-50 to-primary-100 min-h-screen p-6 font-sans">
+  <!-- Navigation -->
+  <nav class="flex justify-between items-center mb-8">
+    <div class="flex items-center space-x-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <h1 class="text-2xl font-bold text-primary-800">DocManager Pro</h1>
+    </div>
+    <div class="flex space-x-4">
+      <button id="uploadNavBtn" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+        <span>Upload</span>
+      </button>
+      <button id="libraryNavBtn" class="px-4 py-2 bg-white text-primary-600 border border-primary-300 rounded-lg hover:bg-primary-50 transition flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+        </svg>
+        <span>Library</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Page 1: Upload Document -->
+  <div id="uploadSection" class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <!-- ... (keep existing upload section code unchanged) ... -->
+  </div>
+
+  <!-- Page 2: Document Library View -->
+  <div id="librarySection" class="max-w-7xl mx-auto hidden">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">Document Library</h2>
+        <p class="text-gray-600">Browse and manage all your documents</p>
+      </div>
+      <button id="newDocumentBtn" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        <span>New Document</span>
+      </button>
+    </div>
+    
+    <div class="flex flex-col lg:flex-row gap-6">
+      <!-- Folder Tree Navigation -->
+      <div class="w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-4">
+        <h3 class="font-medium text-gray-700 mb-4">Folders</h3>
+        
+        <div id="folderTree" class="space-y-1">
+          <!-- Folders will be loaded here -->
+        </div>
+      </div>
+      
+      <!-- Main Content Area -->
+      <div class="flex-grow">
+        <!-- Breadcrumb Navigation -->
+        <div id="breadcrumb" class="flex items-center text-sm text-gray-600 mb-4 flex-wrap">
+          <span class="breadcrumb-item cursor-pointer hover:text-primary-600" onclick="navigateTo('root')">Home</span>
+          <!-- Breadcrumbs will be dynamically added here -->
+        </div>
+        
+        <!-- Current Folder Contents -->
+        <div id="currentFolderContents" class="bg-white rounded-xl shadow-lg p-6">
+          <div id="folderHeader" class="flex items-center justify-between mb-6">
+            <h3 id="currentFolderTitle" class="text-xl font-semibold text-gray-800">All Documents</h3>
+            <div class="flex space-x-2">
+              <select id="sortSelect" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm">
+                <option value="name-asc">Sort by: Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="date-new">Date (Newest)</option>
+                <option value="date-old">Date (Oldest)</option>
+              </select>
+              <button id="filterBtn" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div class="relative flex-grow max-w-xl mb-6">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input type="text" id="searchInput" placeholder="Search in current folder..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" oninput="filterDocuments()">
+          </div>
+          
+          <div id="documentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Documents and subfolders will be loaded here -->
+          </div>
+          
+          <div id="emptyState" class="text-center py-12 text-gray-500 hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h4 class="mt-4 text-lg font-medium">No items found</h4>
+            <p class="mt-1">Upload or create new documents to get started</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Preview -->
+  <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 p-4">
+    <!-- ... (keep existing preview modal code unchanged) ... -->
+  </div>
+
+  <script>
+    // DOM Elements
+    const uploadNavBtn = document.getElementById('uploadNavBtn');
+    const libraryNavBtn = document.getElementById('libraryNavBtn');
+    const uploadSection = document.getElementById('uploadSection');
+    const librarySection = document.getElementById('librarySection');
+    const folderTree = document.getElementById('folderTree');
+    const breadcrumb = document.getElementById('breadcrumb');
+    const currentFolderContents = document.getElementById('currentFolderContents');
+    const currentFolderTitle = document.getElementById('currentFolderTitle');
+    const documentsGrid = document.getElementById('documentsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const previewModal = document.getElementById('previewModal');
+    const previewFrame = document.getElementById('previewFrame');
+    const previewTitle = document.getElementById('previewTitle');
+    const searchInput = document.getElementById('searchInput');
+    
+    // Sample folder structure data
+    const folderStructure = {
+      id: 'root',
+      name: 'All Documents',
+      type: 'folder',
+      children: [
+        {
+          id: 'hr',
+          name: 'HR',
+          type: 'folder',
+          children: [
+            {
+              id: 'hr-policies',
+              name: 'Policies',
+              type: 'folder',
+              children: [
+                {
+                  id: 'hr-policies-employment',
+                  name: 'Employment',
+                  type: 'folder',
+                  children: [
+                    { id: 'doc1', name: 'Employee Handbook 2023', type: 'pdf', size: '2.4 MB', date: '2 days ago' },
+                    { id: 'doc2', name: 'Code of Conduct', type: 'pdf', size: '1.2 MB', date: '1 week ago' }
+                  ]
+                },
+                {
+                  id: 'hr-policies-benefits',
+                  name: 'Benefits',
+                  type: 'folder',
+                  children: [
+                    { id: 'doc3', name: 'Health Insurance Guide', type: 'pdf', size: '3.1 MB', date: '3 weeks ago' }
+                  ]
+                }
+              ]
+            },
+            {
+              id: 'hr-recruiting',
+              name: 'Recruiting',
+              type: 'folder',
+              children: [
+                { id: 'doc4', name: 'Interview Process', type: 'docx', size: '0.8 MB', date: '1 month ago' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'finance',
+          name: 'Finance',
+          type: 'folder',
+          children: [
+            {
+              id: 'finance-reports',
+              name: 'Reports',
+              type: 'folder',
+              children: [
+                { id: 'doc5', name: 'Q1 Financial Report', type: 'xlsx', size: '4.5 MB', date: '2 weeks ago' },
+                { id: 'doc6', name: 'Annual Budget 2023', type: 'xlsx', size: '3.2 MB', date: '1 month ago' }
+              ]
+            },
+            {
+              id: 'finance-invoices',
+              name: 'Invoices',
+              type: 'folder',
+              children: [
+                { id: 'doc7', name: 'March 2023 Invoices', type: 'pdf', size: '5.7 MB', date: '3 weeks ago' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'marketing',
+          name: 'Marketing',
+          type: 'folder',
+          children: [
+            {
+              id: 'marketing-campaigns',
+              name: 'Campaigns',
+              type: 'folder',
+              children: [
+                { id: 'doc8', name: 'Spring Promotion Plan', type: 'docx', size: '2.1 MB', date: '1 week ago' }
+              ]
+            },
+            { id: 'doc9', name: 'Brand Guidelines', type: 'pdf', size: '8.2 MB', date: '2 months ago' }
+          ]
+        }
+      ]
+    };
+
+    // Current navigation state
+    let currentPath = ['root'];
+    let currentFolder = folderStructure;
+
+    // Navigation
+    uploadNavBtn.addEventListener('click', () => {
+      uploadSection.classList.remove('hidden');
+      librarySection.classList.add('hidden');
+    });
+
+    libraryNavBtn.addEventListener('click', () => {
+      uploadSection.classList.add('hidden');
+      librarySection.classList.remove('hidden');
+      renderFolderTree();
+      navigateTo('root');
+    });
+
+    newDocumentBtn.addEventListener('click', () => {
+      uploadSection.classList.remove('hidden');
+      librarySection.classList.add('hidden');
+    });
+
+    // Render folder tree navigation
+    function renderFolderTree(node = folderStructure, level = 0) {
+      if (level === 0) {
+        folderTree.innerHTML = '';
+      }
+      
+      if (node.children && node.children.length > 0) {
+        const folderItem = document.createElement('div');
+        folderItem.className = `folder-item ${node.id === currentPath[currentPath.length - 1] ? 'active' : ''}`;
+        folderItem.style.paddingLeft = `${level * 12}px`;
+        
+        folderItem.innerHTML = `
+          <div class="flex items-center justify-between py-2 px-2 rounded cursor-pointer" onclick="toggleFolder('${node.id}')">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="folder-icon h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+              <span class="text-gray-800">${node.name}</span>
+            </div>
+            <span class="text-xs text-gray-500">${countItems(node)}</span>
+          </div>
+        `;
+        
+        folderTree.appendChild(folderItem);
+        
+        const nestedFolder = document.createElement('div');
+        nestedFolder.className = `nested-folder ${isFolderOpen(node.id) ? 'open' : ''}`;
+        nestedFolder.id = `nested-${node.id}`;
+        
+        node.children.forEach(child => {
+          if (child.type === 'folder') {
+            renderFolderTree(child, level + 1);
+          }
+        });
+      }
+    }
+
+    function countItems(node) {
+      if (!node.children) return 0;
+      return node.children.length;
+    }
+
+    function isFolderOpen(folderId) {
+      return currentPath.includes(folderId);
+    }
+
+    function toggleFolder(folderId) {
+      if (currentPath.includes(folderId)) {
+        // Close the folder
+        const index = currentPath.indexOf(folderId);
+        currentPath = currentPath.slice(0, index);
+      } else {
+        // Open the folder
+        const folder = findFolder(folderId, folderStructure);
+        if (folder) {
+          // Build path to this folder
+          const path = [];
+          let found = false;
+          buildPath(folderStructure, folderId, path, found);
+          currentPath = path;
+        }
+      }
+      renderFolderTree();
+      navigateTo(folderId);
+    }
+
+    function buildPath(node, targetId, path, found) {
+      if (found || !node) return;
+      
+      path.push(node.id);
+      
+      if (node.id === targetId) {
+        found = true;
+        return;
+      }
+      
+      if (node.children) {
+        for (const child of node.children) {
+          buildPath(child, targetId, path, found);
+          if (found) return;
+        }
+      }
+      
+      if (!found) {
+        path.pop();
+      }
+    }
+
+    // Find a folder by ID in the structure
+    function findFolder(folderId, node = folderStructure) {
+      if (node.id === folderId) return node;
+      
+      if (node.children) {
+        for (const child of node.children) {
+          const found = findFolder(folderId, child);
+          if (found) return found;
+        }
+      }
+      
+      return null;
+    }
+
+    // Navigate to a specific folder
+    function navigateTo(folderId) {
+      const folder = findFolder(folderId);
+      if (!folder) return;
+      
+      currentFolder = folder;
+      currentPath = [];
+      buildPath(folderStructure, folderId, currentPath, false);
+      
+      // Update breadcrumb
+      updateBreadcrumb();
+      
+      // Display folder contents
+      displayFolderContents(folder);
+    }
+
+    // Update breadcrumb navigation
+    function updateBreadcrumb() {
+      breadcrumb.innerHTML = '<span class="breadcrumb-item cursor-pointer hover:text-primary-600" onclick="navigateTo(\'root\')">Home</span>';
+      
+      let current = folderStructure;
+      const pathSegments = [];
+      
+      for (let i = 1; i < currentPath.length; i++) {
+        const folderId = currentPath[i];
+        const folder = current.children.find(child => child.id === folderId);
+        if (folder) {
+          pathSegments.push(folder);
+          current = folder;
+        }
+      }
+      
+      pathSegments.forEach((folder, index) => {
+        const crumb = document.createElement('span');
+        crumb.className = 'breadcrumb-item cursor-pointer hover:text-primary-600';
+        crumb.textContent = folder.name;
+        crumb.onclick = () => navigateTo(folder.id);
+        breadcrumb.appendChild(crumb);
+      });
+      
+      currentFolderTitle.textContent = current.name || 'All Documents';
+    }
+
+    // Display contents of the current folder
+    function displayFolderContents(folder) {
+      documentsGrid.innerHTML = '';
+      
+      if (!folder.children || folder.children.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      // Separate folders and files
+      const folders = folder.children.filter(item => item.type === 'folder');
+      const files = folder.children.filter(item => item.type !== 'folder');
+      
+      // Display folders first
+      folders.forEach(item => {
+        const folderCard = document.createElement('div');
+        folderCard.className = 'document-card bg-white p-4 rounded-lg shadow border border-gray-100 cursor-pointer transition hover:border-primary-300';
+        folderCard.onclick = () => navigateTo(item.id);
+        folderCard.innerHTML = `
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <img src="https://img.icons8.com/color/48/folder.png" class="h-10 w-10" alt="Folder"/>
+            </div>
+            <div class="ml-3 flex-grow">
+              <h4 class="font-medium text-gray-800">${item.name}</h4>
+              <p class="text-xs text-gray-500 mt-1">${item.children ? item.children.length : 0} items</p>
+            </div>
+          </div>
+        `;
+        documentsGrid.appendChild(folderCard);
+      });
+      
+      // Then display files
+      files.forEach(item => {
+        const icon = item.type === 'pdf' ? 'pdf' : 
+                    item.type === 'docx' ? 'ms-word' : 
+                    'microsoft-excel-2019';
+        
+        const fileCard = document.createElement('div');
+        fileCard.className = 'document-card bg-white p-4 rounded-lg shadow border border-gray-100 cursor-pointer transition hover:border-primary-300';
+        fileCard.innerHTML = `
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <img src="https://img.icons8.com/color/48/${icon}.png" class="h-10 w-10" alt="${item.type}"/>
+            </div>
+            <div class="ml-3 flex-grow">
+              <h4 class="font-medium text-gray-800">${item.name}</h4>
+              <p class="text-xs text-gray-500 mt-1">${item.date} • ${item.size}</p>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end space-x-2">
+            <button onclick="previewDocument('https://example.com/doc.pdf', '${item.name}')" class="px-3 py-1 bg-primary-50 text-primary-600 rounded-lg text-sm hover:bg-primary-100">
+              View
+            </button>
+            <button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-sm hover:bg-gray-100">
+              Download
+            </button>
+          </div>
+        `;
+        documentsGrid.appendChild(fileCard);
+      });
+    }
+
+    function filterDocuments() {
+      const searchTerm = searchInput.value.toLowerCase();
+      if (!searchTerm) {
+        displayFolderContents(currentFolder);
+        return;
+      }
+      
+      // Filter both folders and files
+      const allItems = currentFolder.children || [];
+      const filtered = allItems.filter(item => 
+        item.name.toLowerCase().includes(searchTerm)
+      );
+      
+      if (filtered.length === 0) {
+        documentsGrid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      // Create a temporary folder with filtered items
+      const tempFolder = {
+        ...currentFolder,
+        children: filtered
+      };
+      
+      displayFolderContents(tempFolder);
+    }
+
+    // Document preview
+    function previewDocument(url, title) {
+      previewTitle.textContent = title;
+      previewFrame.src = url;
+      previewModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePreview() {
+      previewModal.classList.add('hidden');
+      previewFrame.src = '';
+      document.body.style.overflow = '';
+    }
+
+    // Close modal when clicking outside
+    previewModal.addEventListener('click', function(e) {
+      if (e.target === previewModal) {
+        closePreview();
+      }
+    });
+
+    // Initialize with upload section visible
+    uploadSection.classList.remove('hidden');
+    librarySection.classList.add('hidden');
+  </script>
+</body>
+</html>

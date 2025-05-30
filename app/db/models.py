@@ -24,7 +24,7 @@ class FileMetadata(Base):
     file_size = Column(Integer)
     content_type = Column(String)
     upload_path = Column(String)
-
+    category = Column(String, nullable=True)
     created_date = Column(DateTime, default=datetime.now())
     modified_date = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
     upload_status = Column(String)

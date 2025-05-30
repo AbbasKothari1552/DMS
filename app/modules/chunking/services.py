@@ -29,7 +29,7 @@ class ChunkData:
                 detail="Database session not available"
             )
         
-        logger.debug(f"Chunk {chunk_index} preview: {chunk_text[:50]}...")
+        # logger.debug(f"Chunk {chunk_index} preview: {chunk_text[:50]}...")
 
         try:
             db_chunk = ChunkMetadata(
@@ -43,7 +43,7 @@ class ChunkData:
             self.db.commit()
             self.db.refresh(db_chunk)
 
-            logger.debug(f"Chunk: {chunk_index} saved successfully.")
+            # logger.debug(f"Chunk: {chunk_index} saved successfully.")
             return db_chunk
 
         except Exception as e:

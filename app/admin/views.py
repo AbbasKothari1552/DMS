@@ -3,7 +3,7 @@ from app.db.models import FileMetadata, TextMetaData, ChunkMetadata
 
 class FileMetadataAdmin(ModelView, model=FileMetadata):
 
-    column_list = [FileMetadata.id, FileMetadata.file_id, FileMetadata.filename, FileMetadata.file_type, FileMetadata.file_size, FileMetadata.content_type, FileMetadata.upload_path, FileMetadata.created_date, FileMetadata.modified_date]
+    column_list = [FileMetadata.id, FileMetadata.file_id, FileMetadata.filename, FileMetadata.file_type, FileMetadata.category, FileMetadata.file_size, FileMetadata.content_type, FileMetadata.upload_path, FileMetadata.created_date, FileMetadata.modified_date]
     name = "File Metadata"
     name_plural = "Files Metadata"
 

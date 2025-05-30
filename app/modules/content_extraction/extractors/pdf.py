@@ -2,9 +2,13 @@ from pdfminer.high_level import extract_text
 from pdf2image import convert_from_path
 from typing import Dict
 import os
+import time
 
 # import pytesseract from tesseract_config.py to use configured path
 from app.core.tesseract_config import pytesseract
+
+from app.core.logging_config import get_logger
+logger = get_logger(__name__)
 
 
 def extract_pdf_text(input_path: str, output_path: str) -> Dict:
@@ -17,9 +21,15 @@ def extract_pdf_text(input_path: str, output_path: str) -> Dict:
         if len(text.strip()) < 100:
             images = convert_from_path(input_path)
             text = ""
+            logger.info("Extracting with OCR Tesseract...")
+            start_time = time.perf_counter()
+            
             for image in images:
                 text += pytesseract.image_to_string(image) + "\n"
             method = "pdfminer+ocr"
+
+            total_time = time.perf_counter() - start_time
+            logger.info(f"OCR processing time: {total_time:.2f} seconds")
         else:
             method = "pdfminer"
         
