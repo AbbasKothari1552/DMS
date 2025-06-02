@@ -13,16 +13,20 @@ class CategoryPredictor:
 
     def build_prompt(self, text: str) -> str:
         prompt = f"""
-        Given the following document content:
 
-        ---
-        {text}
-        ---
 
-        Choose the most appropriate category from the following list:
+        You are a document classifier. Given the document content, return only the most appropriate category name from the following list:
+
         {', '.join(CATEGORY_LIST)}
 
-        Respond with only one category name.
+        Return ONLY the category name. Do not include any explanation, formatting, or additional words.
+
+        Example Output:
+        Medical
+
+        Document content:
+
+        {text}
         """
         return prompt.strip()
 

@@ -41,10 +41,12 @@ class SemanticSearchService:
                 if not file:
                     continue
 
+                file_path = f"uploads/{file.filename}"
+
                 response.append({
                     "chunk_text": chunk.chunk_text[:300],
                     "file_name": file.filename,
-                    "file_path": file.upload_path,
+                    "file_path": file_path,
                     "score": score
                 })
 

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from typing import List, Union, Dict
 from fastapi.responses import JSONResponse
+from fastapi import Body
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import os
 from pathlib import Path
@@ -114,8 +116,8 @@ async def upload_files(
                     raise HTTPException(status_code=500, detail="Extracted text file not found")
 
                 
-                # Commit the processing pipeline
-                db.commit()
+                # # Commit the processing pipeline
+                # db.commit()
 
                 logger.info(f"Processed: {file_meta.filename}")
                 total_time = time.perf_counter() - start_time
@@ -126,7 +128,8 @@ async def upload_files(
                     "file_id": file_meta.file_id,
                     "status": "success",
                     "file_size": file_meta.file_size,
-                    "file_type": file_meta.file_type
+                    "file_type": file_meta.file_type,
+                    "predicted_category": predicted_category
                 })
                 
             except Exception as processing_error:
@@ -177,3 +180,28 @@ async def upload_files(
             "failed": [r for r in results if r["status"] == "failed"],
         }
     )
+
+@router.get("/categories")
+def get_categories():
+    return {"categories": CATEGORY_LIST}
+
+# pydantic validation of verifies category function
+class CategoryUpdate(BaseModel):
+    file_id: str
+    category: str
+
+# verify the category
+@router.post("/verify-category")
+def verify_category(
+    data: List[CategoryUpdate],
+    db: Session = Depends(get_db)
+):
+    logger.info("Processing: Category verification.")
+    for item in data:
+        logger.debug(f"file_id: {item.file_id}, category: {item.category}")
+        file = db.query(FileMetadata).filter(FileMetadata.file_id == item.file_id).first()
+        if file:
+            file.category = item.category
+
+    db.commit()
+    return {"message": "Categories updated successfully"}

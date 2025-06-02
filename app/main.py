@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 # admin app integration
 from sqladmin import Admin
 import os
@@ -24,6 +26,9 @@ logger = get_logger(__name__)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Setup Jinja2 template rendering
+templates = Jinja2Templates(directory="app/templates")
 
 @app.on_event("startup")
 def on_startup():
@@ -55,15 +60,33 @@ app.include_router(upload_router, prefix="/api/files", tags=["files"])
 app.include_router(semantic_search_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
 
+# Get the absolute path to the 'documents' folder
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DOCUMENTS_DIR = os.path.join(BASE_DIR, "documents")
 
-# Mount document folder as /uploads
-app.mount(
-    "/uploads",
-    StaticFiles(directory=UPLOAD_DIR), 
-    name="uploads"
-)
-# Not working --debug-- 
+app.mount("/uploads", StaticFiles(directory=DOCUMENTS_DIR), name="uploads")
 
-@app.get("/")
-def read_root():
-    return {"message": "File Upload Service"}
+# # Mount document folder as /uploads
+# app.mount(
+#     "/uploads",
+#     StaticFiles(directory="documents"), 
+#     name="uploads"
+# )
+
+# upload files html page
+@app.get("/upload", response_class=HTMLResponse)
+def read_root(request: Request):
+    print("Templates:", templates)
+    return templates.TemplateResponse("upload_files.html", {"request": request})
+
+# semantic search html page
+@app.get("/chat", response_class=HTMLResponse)
+def semantic_search(request: Request):
+    print("Templates:", templates)
+    return templates.TemplateResponse("semantic_search.html", {"request": request})
+
+# Rag chat html page
+@app.get("/rag_chat", response_class=HTMLResponse)
+def rag_chat(request: Request):
+    print("Templates:", templates)
+    return templates.TemplateResponse("rag_chat.html", {"request": request})
